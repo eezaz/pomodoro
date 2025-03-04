@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>POMODORO</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Tomato Timer </h1>
+        <div class="timer" id="timer">25:00</div>
+        <div class="controls">
+            <button id="start">▶ Start</button>
+            <button id="stop">■ Stop</button>
+            <button id="reset">🔄 Reset</button>
+        </div>
+        <div class="session-controls">
+            <button id="pomodoro">🍅 Pomodoro</button>
+            <button id="short-break">☕ Short Break</button>
+            <button id="long-break">🌙 Long Break</button>
+        </div>
+        <div class="settings">
+            <label>
+                <input type="checkbox" id="auto-start"> Auto Start Next Session
+            </label>
+        </div>
+        <div class="log">
+            <h2>Session Log</h2>
+            <ul id="log-list"></ul>
+        </div>
+    </div>
+    
+    <audio id="alarm" src="C:\Users\Ezaz\Music\raw\japan.mp3"></audio>
+
+
+
+<br>
+
+<label for="volumeControl">Volume:</label>
+<input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1">
+
+
+       <script>
+
+	document.getElementById("alarm").volume = .1;
+  const audio = document.getElementById("alarm");
+  const volumeControl = document.getElementById("volumeControl");
+
+  volumeControl.addEventListener("input", function () {
+      audio.volume = this.value;
+  });
+
+
+
+        let timer;
+        let timeLeft = 1500;
+        let isRunning = false;
+        let sessionType = "pomodoro";
+        let sessionCount = 0;
+        
+        const sessionDurations = {
+            pomodoro: 1500,
+            shortBreak: 300,
+            longBreak: 900
+        };
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timer = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
+                        document.getElementById("alarm").play();
+                        clearInterval(timer);
+                        isRunning = false;
+                        sessionCount++;
+                        logSession();
+                        if (document.getElementById("auto-start").checked) {
+                            startTimer();
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+            isRunning = false;
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timeLeft = sessionDurations[sessionType];
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            let formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            document.getElementById("timer").textContent = formattedTime;
+            document.title = formattedTime ; // Update browser tab title
+        }
+
+        function logSession() {
+            let logList = document.getElementById("log-list");
+            let listItem = document.createElement("li");
+            listItem.textContent = `Session ${sessionCount}: ${sessionType.replace("pomodoro", "Pomodoro 25 min").replace("shortBreak", "Short Break 5 min").replace("longBreak", "Long Break 15 min")}`;
+            logList.appendChild(listItem);
+        }
+
+        document.getElementById("start").addEventListener("click", startTimer);
+        document.getElementById("stop").addEventListener("click", stopTimer);
+        document.getElementById("reset").addEventListener("click", resetTimer);
+
+        document.getElementById("pomodoro").addEventListener("click", function() {
+            sessionType = "pomodoro";
+            timeLeft = sessionDurations[sessionType];
+            updateDisplay();
+        });
+        
+        document.getElementById("short-break").addEventListener("click", function() {
+            sessionType = "shortBreak";
+            timeLeft = sessionDurations[sessionType];
+            updateDisplay();
+        });
+        
+        document.getElementById("long-break").addEventListener("click", function() {
+            sessionType = "longBreak";
+            timeLeft = sessionDurations[sessionType];
+            updateDisplay();
+        });
+    document.addEventListener("click", function () {
+        audio.pause();
+        audio.currentTime = 0; // Reset audio to the beginning
+    });
+    </script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #F8F8F8; }
+        .container { max-width: 400px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px gray; }
+        .timer { font-size: 48px; margin: 20px; font-weight: bold; }
+        button { font-size: 18px; padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; transition: 0.2s; }
+        button:hover { background: lightgray; }
+        .log { margin-top: 20px; text-align: left; padding: 10px; background: #eee; border-radius: 5px; }
+        .log h2 { font-size: 20px; }
+        .log ul { list-style: none; padding: 0; }
+        .log li { font-size: 16px; margin: 5px 0; }
+    </style>
+</body>
+</html>
